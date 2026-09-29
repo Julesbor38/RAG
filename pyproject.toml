@@ -5,5 +5,24 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fire>=0.7.1",
     "pydantic>=2.13.5",
+    "torch>=2.14.0",
+    "tqdm>=4.70.1",
+    "transformers>=5.17.0",
 ]
+
+[dependency-groups]
+dev = [
+    "flake8",
+    "mypy",
+    "types-tqdm>=4.70.0.20260906",
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
