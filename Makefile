@@ -1,6 +1,6 @@
 PYTHON  = uv run python
 SRC     = src
-ARGS    ?=
+ARGS    ?= index
 
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports \
              --disallow-untyped-defs --check-untyped-defs

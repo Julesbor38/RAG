@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 CHUNKERS: Dict[str, Callable[[str, str, int], List[Chunk]]] = {
     ".md": chunk_markdown,
+    ".txt": chunk_markdown,
+    ".rst": chunk_markdown,
     ".json": chunk_json,
     ".py": chunk_python,
 }

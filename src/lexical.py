@@ -1,6 +1,8 @@
+"""Lexical retrievers: TF-IDF and Okapi BM25."""
 import math
 import re
 from collections import Counter
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 from .models import Chunk
@@ -11,9 +13,32 @@ CAMEL_CASE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 TOKEN = re.compile(r"[a-z0-9]+")
 
 
+STOP_WORDS = frozenset(
+    "a an and are as at be by can do does for from how i in is it of on or "
+    "the to what when where which who why with you your".split())
+
+
+def stem(token: str) -> str:
+    """Strip a plural "s" so "models" and "model" match."""
+    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        return token[:-1]
+    return token
+
+
 def tokenize(text: str) -> List[str]:
-    """Lowercase `text` and split it into alphanumeric tokens."""
-    return TOKEN.findall(CAMEL_CASE.sub(" ", text).lower())
+    """Lowercase `text`, split it into tokens, drop stop words and stem."""
+    return [stem(token) for token
+            in TOKEN.findall(CAMEL_CASE.sub(" ", text).lower())
+            if token not in STOP_WORDS]
+
+
+def path_tokens(file_path: str) -> List[str]:
+    """Return the tokens of the corpus-relative part of `file_path`."""
+    parts = Path(file_path).parts
+    # Drop the "data/raw/<repository>" prefix shared by every chunk.
+    relative = parts[3:] if len(parts) > 3 and parts[:2] == ("data", "raw") \
+        else parts
+    return tokenize(" ".join(relative))
 
 
 class TfidfRetriever:
@@ -71,8 +96,11 @@ class BM25Retriever:
         self.chunks: List[Chunk] = chunks
         self.k1: float = k1
         self.b: float = b
-        counts: List[Counter[str]] = [Counter(tokenize(chunk.text))
-                                      for chunk in chunks]
+        # File path tokens are indexed too: a question often names the
+        # topic a file is named after (e.g. "data parallel deployment").
+        counts: List[Counter[str]] = [
+            Counter(tokenize(chunk.text) + path_tokens(chunk.file_path))
+            for chunk in chunks]
         self.lengths: List[int] = [sum(count.values()) for count in counts]
         self.average_length: float = (sum(self.lengths) / len(chunks)
                                       if chunks else 0.0)

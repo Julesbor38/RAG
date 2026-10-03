@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project: data, generated outputs and local evaluation tools
+data/
+moulinette
+moulinette-*
+Moulinette/
+RAGSubject.pdf
+.vscode/
